@@ -1,0 +1,69 @@
+﻿kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: claros
+  namespace: test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: claros
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: claros
+    spec:
+      containers:
+        - name: claros
+          image: 'registry.ocp4.pacosta.com:8443/test/claros:2.8'
+          ports:
+            - containerPort: 9123
+              protocol: TCP
+          env:
+            - name: spring.data.elasticsearch.cluster-name
+              value: docker-cluster
+            - name: elastic.host
+              value: elasticsearchdefault-service.default.svc.cluster.local
+            - name: elastic.port
+              value: '9200'
+            - name: spring.elasticsearch.uris
+              value: 'http://elasticsearchdefault-default.apps.ocp4.pacosta.com/'
+            - name: spring.config.import
+              value: 'consul:consul-service:8500'
+            - name: spring.cloud.consul.host
+              value: consul-service
+            - name: spring.cloud.consul.port
+              value: '8500'
+            - name: spring.kafka.producer.bootstrap-servers
+              value: 
+            - name: minio.rest-url
+              value:  
+            - name: minio.rest-port
+              value:
+            - name: minio_aK
+              value:
+            - name: minio_sK
+              value:
+            - name: minio.rest-port
+              value:
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: IfNotPresent
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      schedulerName: default-scheduler
+      tolerations:
+        - key: node-role.kubernetes.io/master
+          operator: Exists
+          effect: NoSchedule
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600
